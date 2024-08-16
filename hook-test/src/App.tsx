@@ -1,14 +1,42 @@
-import { useState } from "react";
+// useReducer
+import { Reducer, useReducer } from "react";
+
+interface Data {
+  result: number;
+}
+
+interface Action {
+  type: "add" | "minus";
+  num: number;
+}
+
+function reducer(state: Data, action: Action) {
+  switch (action.type) {
+    case "add":
+      return {
+        result: state.result + action.num,
+      };
+    case "minus":
+      return {
+        result: state.result - action.num,
+      };
+  }
+
+  return state;
+}
 
 function App() {
-  const [number, setNumber] = useState(() => {
-    // 这个函数只能写一些同步的计算逻辑， 不支持异步
-    const num1 = 1 + 2;
-    const num2 = 2 + 3;
-    return num1 + num2; // 初始值为8
+  const [res, dispatch] = useReducer<Reducer<Data, Action>>(reducer, {
+    result: 0,
   });
 
-  return <div onClick={() => setNumber(number + 1)}>{number}</div>;
+  return (
+    <div>
+      <div onClick={() => dispatch({ type: "add", num: 2 })}>加</div>
+      <div onClick={() => dispatch({ type: "minus", num: 1 })}>减</div>
+      {res.result}
+    </div>
+  );
 }
 
 export default App;
