@@ -1,28 +1,28 @@
-import React, {
+import {
+  SetStateAction,
   useCallback,
   useEffect,
   useRef,
   useState,
-  SetStateAction,
 } from "react";
 
-function useMergeState<T>(
+export function useMergeState<T>(
   defaultStateValue: T,
-  props: {
+  props?: {
     defaultValue?: T;
     value?: T;
-    onChange?: (value: T) => void;
+    onChange: (value: T) => void;
   }
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const { defaultValue, value: propsValue } = props || {};
+  const { defaultValue, value: propsValue, onChange } = props || {};
 
   const isFirstRender = useRef(true);
 
-  const [statevalue, setStateValue] = useState<T>(() => {
+  const [stateValue, setStateValue] = useState<T>(() => {
     if (propsValue !== undefined) {
-      return propsValue;
+      return propsValue!;
     } else if (defaultValue !== undefined) {
-      return defaultValue;
+      return defaultValue!;
     } else {
       return defaultStateValue;
     }
@@ -30,32 +30,30 @@ function useMergeState<T>(
 
   useEffect(() => {
     if (propsValue === undefined && !isFirstRender.current) {
-      //  从受控组件转换到非受控组件
       setStateValue(propsValue!);
     }
 
     isFirstRender.current = false;
   }, [propsValue]);
 
-  const mergedValue = propsValue !== undefined ? propsValue : statevalue;
+  const mergedValue = propsValue === undefined ? stateValue : propsValue;
 
-  // eslint-disabled-next-line
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   function isFunction(value: unknown): value is Function {
     return typeof value === "function";
   }
 
   const setState = useCallback(
     (value: SetStateAction<T>) => {
-      if (isFunction(value)) {
-        setStateValue(value(statevalue));
-      } else {
-        setStateValue(value);
+      const res = isFunction(value) ? value(stateValue) : value;
+
+      if (propsValue === undefined) {
+        setStateValue(res);
       }
+      onChange?.(res);
     },
-    [statevalue]
+    [stateValue]
   );
 
   return [mergedValue, setState];
 }
-
-export default useMergeState;

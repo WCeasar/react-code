@@ -1,10 +1,10 @@
 import { useState } from "react";
-import useMergeState from "./useMergeState";
+import { useMergeState } from "./useMergeState";
 
 interface CalendarProps {
   value?: Date;
   defaultValue?: Date;
-  onChange?: (date: Date) => void;
+  onChange: (date: Date) => void;
 }
 
 function Calendar(props: CalendarProps) {
